@@ -1,15 +1,14 @@
-package ru.neoflex.vak.fiasParser;
+package ru.neoflex.vak.fiasParser.dbWrapper;
 
-import ru.neoflex.vak.fiasParser.config.MssqlProperties;
+import ru.neoflex.vak.fiasParser.config.MysqlProperties;
 import ru.neoflex.vak.fiasParser.fiasApi.DbfTable;
 
 import java.io.IOException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
-public class MssqlWrapper extends DbWrapper implements AutoCloseable {
+public class MysqlWrapper extends DbWrapper implements AutoCloseable {
 
-    MssqlWrapper(MssqlProperties config) {
+    public MysqlWrapper(MysqlProperties config) {
         super(config);
     }
 
@@ -18,10 +17,8 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
         Integer recordsCount = 0;
         Integer rowsInChunk = 0;
         String pattern = getInsertPattern(table);
-        StringBuilder execSql = new StringBuilder("");
+        StringBuilder execSql = new StringBuilder(pattern);
         ArrayList<DbfTable.Header> headers = table.getHeaders();
-
-        Statement st = createStatement();
 
         System.out.print("Формируем chunk... ");
         ArrayList<String> rowObjects;
@@ -30,7 +27,7 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                 rowsInChunk++;
                 recordsCount++;
 
-                execSql = new StringBuilder(pattern);
+                execSql.append("(");
                 Integer length = table.getHeaders().size();
                 for (int i = 0; i < rowObjects.size(); i++) {
                     execSql.append(getFieldData(headers.get(i), rowObjects.get(i)));
@@ -39,13 +36,13 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                     }
                 }
                 execSql.append("),");
-                st.addBatch(prepareQuery(execSql.toString()));
 
                 if (rowsInChunk == ROWS_IN_CHUNK) {
                     System.out.println("Готово.");
                     System.out.print("Вставляем chunk(" + ROWS_IN_CHUNK + ") в таблицу("
                             + (recordsCount - ROWS_IN_CHUNK) + ") '" + table.getTableName() + "'... ");
-                    st.executeBatch();
+                    executeUpdate(prepareQuery(execSql.toString()));
+                    execSql = new StringBuilder(pattern);
                     rowsInChunk = 0;
                     System.out.println("Готово.");
                     System.out.print("Формируем chunk... ");
@@ -57,7 +54,7 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
             System.out.println("Готово.");
             System.out.print("Вставляем chunk(" + rowsInChunk + ") в таблицу("
                     + (recordsCount - rowsInChunk) + ") '" + table.getTableName() + "'... ");
-            st.executeBatch();
+            executeUpdate(prepareQuery(execSql.toString()));
             System.out.println("Готово.");
         }
         System.out.println("Всего записей в таблице: " + recordsCount);
@@ -81,7 +78,7 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                 if (object == null) {
                     return null;
                 }
-                return "CONVERT(datetime, '" + object + "', 104)";
+                return "STR_TO_DATE('" + object + "','%d.%m.%Y')";
             }
             default:
                 return object;
@@ -89,11 +86,22 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
     }
 
     private String getInsertPattern(DbfTable table) {
-        return "INSERT INTO " + table.getTableName() + " VALUES(";
+        StringBuilder insertHeaders = new StringBuilder("(");
+        ArrayList<DbfTable.Header> headers = table.getHeaders();
+
+        Integer length = headers.size();
+        for (int i = 0; i < length; i++) {
+            insertHeaders.append(headers.get(i).name);
+            if (i < length - 1) {
+                insertHeaders.append(",");
+            }
+        }
+        insertHeaders.append(")");
+        return "INSERT INTO " + table.getTableName() + " " + insertHeaders + " VALUES";
     }
 
     @Override
     String getCreateTablePattern(String tableName) {
-        return "CREATE TABLE " + tableName + " (id INTEGER PRIMARY KEY not NULL IDENTITY(1,1),";
+        return "CREATE TABLE " + tableName + " (id INTEGER PRIMARY KEY not NULL AUTO_INCREMENT,";
     }
 }

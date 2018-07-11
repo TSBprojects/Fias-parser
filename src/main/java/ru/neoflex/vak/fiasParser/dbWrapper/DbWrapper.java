@@ -1,4 +1,4 @@
-package ru.neoflex.vak.fiasParser;
+package ru.neoflex.vak.fiasParser.dbWrapper;
 
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
 import ru.neoflex.vak.fiasParser.config.MysqlProperties;

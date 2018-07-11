@@ -1,16 +1,12 @@
 package ru.neoflex.vak.fiasParser.config;
 
-import ru.neoflex.vak.fiasParser.DbWrapper;
-import ru.neoflex.vak.fiasParser.MssqlWrapper;
-import ru.neoflex.vak.fiasParser.MysqlWrapper;
-import ru.neoflex.vak.fiasParser.fiasApi.FiasDatabase;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,14 +53,14 @@ public class ParsConfig {
             Files.createFile(Paths.get("config.ini"));
             Files.write(
                     Paths.get("config.ini"),
-                    Arrays.asList(
+                    Collections.singletonList(
                             "[Database type]\n" +
                                     "# mssql/mysql\n" +
                                     "db_type_name=\n\n" +
                                     "[Database connection]\n" +
                                     "# If properties not specified,\n" +
                                     "# will be used the default values for\n" +
-                                    "# -- host_name\n" +
+                                    "# -- host_name=localhost\n" +
                                     "# -- port\n" +
                                     "database_name=\n" +
                                     "host_name=\n" +
@@ -73,7 +69,6 @@ public class ParsConfig {
                                     "password=\n\n" +
                                     "[MySql connection]\n" +
                                     "# the default will be used for\n" +
-                                    "# -- host_name=localhost\n" +
                                     "# -- port=3306\n" +
                                     "verify_server_certificate=false\n" +
                                     "use_SSL=false\n" +
@@ -82,9 +77,8 @@ public class ParsConfig {
                                     "server_timezone=UTC\n\n" +
                                     "[MsSql connection]\n" +
                                     "# the default will be used for\n" +
-                                    "# -- host_name=localhost\n" +
                                     "# -- port=1433\n" +
-                                    "# -- default integrated_security=true\n" +
+                                    "# -- integrated_security=true\n" +
                                     "integrated_security=true\n\n" +
                                     "[FIAS files path]\n" +
                                     "fias_dir_path="),

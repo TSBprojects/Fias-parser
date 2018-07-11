@@ -1,6 +1,9 @@
 package ru.neoflex.vak.fiasParser;
 
 import ru.neoflex.vak.fiasParser.config.ParsConfig;
+import ru.neoflex.vak.fiasParser.dbWrapper.DbWrapper;
+import ru.neoflex.vak.fiasParser.dbWrapper.MssqlWrapper;
+import ru.neoflex.vak.fiasParser.dbWrapper.MysqlWrapper;
 import ru.neoflex.vak.fiasParser.fiasApi.FiasDatabase;
 
 import java.nio.file.Paths;
@@ -8,8 +11,8 @@ import java.nio.file.Paths;
 public class Main {
     public static void main(String[] args) throws Exception {
 
-        //ParsConfig config = new ParsConfig("D:\\Documents\\IdeaProjects\\Fias parser\\Packaged application\\config.ini");
-        ParsConfig config = new ParsConfig(args[0]);
+        ParsConfig config = new ParsConfig("D:\\Documents\\IdeaProjects\\Fias parser\\Packaged application\\config.ini");
+        //ParsConfig config = new ParsConfig(args[0]);
 
         switch (config.getDbType()) {
             case mssql: {
@@ -29,6 +32,5 @@ public class Main {
                 break;
             }
         }
-
     }
 }
