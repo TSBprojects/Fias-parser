@@ -67,7 +67,7 @@ public class ParsConfig {
                                     "# -- host_name\n" +
                                     "# -- port\n" +
                                     "database_name=\n" +
-                                    "host_name=localhost\n" +
+                                    "host_name=\n" +
                                     "port=\n" +
                                     "user=\n" +
                                     "password=\n\n" +

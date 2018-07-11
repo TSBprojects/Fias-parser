@@ -5,15 +5,15 @@ import ru.neoflex.vak.fiasParser.config.MysqlProperties;
 import ru.neoflex.vak.fiasParser.fiasApi.DbfTable;
 import ru.neoflex.vak.fiasParser.fiasApi.FiasDatabase;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
 public abstract class DbWrapper implements AutoCloseable {
 
-    private static final int ROWS_IN_CHUNK = 1000;
+    static final int ROWS_IN_CHUNK = 1000;
 
     private Connection connection;
+
 
     DbWrapper(MssqlProperties config) {
         System.out.print("Соединение с БД... ");
@@ -68,6 +68,28 @@ public abstract class DbWrapper implements AutoCloseable {
         System.out.println("Все данные перенесены в БД.");
     }
 
+
+    String prepareQuery(String text) {
+        return text.substring(0, text.length() - 1) + ";";
+    }
+
+    Statement createStatement() throws SQLException {
+        return connection.createStatement();
+    }
+
+    void executeUpdate(String SQL) {
+        try (PreparedStatement prepareStatement = connection.prepareStatement(SQL)) {
+            prepareStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    abstract void fillDbfTable(DbfTable table) throws Exception;
+
+    abstract String getCreateTablePattern(String tableName);
+
+
     private void createTableFromDbf(DbfTable table) throws Exception {
         String tableName = table.getTableName();
         if (isTableExist(tableName)) {
@@ -83,69 +105,8 @@ public abstract class DbWrapper implements AutoCloseable {
         System.out.println("Таблица '" + tableName + "' заполнена.\n");
     }
 
-    private void fillDbfTable(DbfTable table) throws Exception {
-        Integer recordsCount = 0;
-        Integer rowsInChunk = 0;
-        String pattern = getInsertPattern(table);
-        StringBuilder execSql = new StringBuilder("");
-        ArrayList<DbfTable.Header> headers = table.getHeaders();
-
-        Statement st = connection.createStatement();
-
-        System.out.print("Формируем chunk... ");
-        ArrayList<String> rowObjects;
-        try (DbfTable reader = table.startRead()) {
-            while ((rowObjects = reader.nextRow()) != null) {
-                rowsInChunk++;
-                recordsCount++;
-
-                execSql = new StringBuilder(pattern);
-                Integer length = table.getHeaders().size();
-                for (int i = 0; i < rowObjects.size(); i++) {
-                    execSql.append(getFieldData(headers.get(i), rowObjects.get(i)));
-                    if (i < length - 1) {
-                        execSql.append(",");
-                    }
-                }
-                execSql.append("),");
-                st.addBatch(prepareQuery(execSql.toString()));
-
-                if (rowsInChunk == ROWS_IN_CHUNK) {
-                    System.out.println("Готово.");
-                    System.out.print("Вставляем chunk(" + ROWS_IN_CHUNK + ") в таблицу("
-                            + (recordsCount - ROWS_IN_CHUNK) + ") '" + table.getTableName() + "'... ");
-                    st.executeBatch();
-                    rowsInChunk = 0;
-                    System.out.println("Готово.");
-                    System.out.print("Формируем chunk... ");
-                }
-            }
-        }
-
-        if (!execSql.toString().equals(pattern)) {
-            System.out.println("Готово.");
-            System.out.print("Вставляем chunk(" + rowsInChunk + ") в таблицу("
-                    + (recordsCount - rowsInChunk) + ") '" + table.getTableName() + "'... ");
-            st.executeBatch();
-            System.out.println("Готово.");
-        }
-        System.out.println("Всего записей в таблице: " + recordsCount);
-    }
-
-    private String prepareQuery(String text) {
-        return text.substring(0, text.length() - 1) + ";";
-    }
-
     private void dropTable(String tableName) {
         executeUpdate("DROP TABLE " + tableName);
-    }
-
-    private void executeUpdate(String SQL) {
-        try (PreparedStatement prepareStatement = connection.prepareStatement(SQL)) {
-            prepareStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     private String getCreateTableSql(DbfTable table) {
@@ -181,13 +142,6 @@ public abstract class DbWrapper implements AutoCloseable {
         resultSet = metadata.getTables(null, null, tableName, null);
         return resultSet.next();
     }
-
-
-    public abstract String getInsertPattern(DbfTable table);
-
-    public abstract String getCreateTablePattern(String tableName);
-
-    public abstract String getFieldData(DbfTable.Header header, String object) throws IOException;
 
 
     public void close() {

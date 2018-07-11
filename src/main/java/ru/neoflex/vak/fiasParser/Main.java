@@ -8,8 +8,8 @@ import java.nio.file.Paths;
 public class Main {
     public static void main(String[] args) throws Exception {
 
-        ParsConfig config = new ParsConfig("D:\\Documents\\IdeaProjects\\Fias parser\\Packaged application\\config.ini");
-        //ParsConfig config = new ParsConfig(args[0]);
+        //ParsConfig config = new ParsConfig("D:\\Documents\\IdeaProjects\\Fias parser\\Packaged application\\config.ini");
+        ParsConfig config = new ParsConfig(args[0]);
 
         switch (config.getDbType()) {
             case mssql: {
