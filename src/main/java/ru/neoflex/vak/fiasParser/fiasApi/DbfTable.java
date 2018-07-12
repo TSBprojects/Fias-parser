@@ -3,6 +3,7 @@ package ru.neoflex.vak.fiasParser.fiasApi;
 import com.linuxense.javadbf.DBFException;
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,8 +44,8 @@ public class DbfTable implements AutoCloseable {
     }
 
     void initializeTable(Path rootPath) {
-        headers = new ArrayList<Header>();
-        parts = new ArrayList<DbfTablePart>();
+        headers = new ArrayList<>();
+        parts = new ArrayList<>();
 
         String tablePart = rootPath.toString().toLowerCase() + "\\" + firstPartName.toLowerCase();
         try (DBFReader reader = new DBFReader(new FileInputStream(tablePart))) {
@@ -166,6 +167,4 @@ public class DbfTable implements AutoCloseable {
         reader.close();
         reader = null;
     }
-
-
 }

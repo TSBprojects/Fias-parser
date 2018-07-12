@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DbfTablePart implements AutoCloseable {
 
@@ -62,8 +64,7 @@ public class DbfTablePart implements AutoCloseable {
                 if (headers.get(i).dataType.equals("DATE")) {
                     rObjects.add(Utils.getTimeFromString(rowObjects[i].toString()));
                 } else {
-                    String f = changeEncoding(rowObjects[i].toString());
-                    rObjects.add(f);
+                    rObjects.add(changeEncoding(rowObjects[i].toString()));
                 }
             } else {
                 rObjects.add(null);
@@ -73,6 +74,11 @@ public class DbfTablePart implements AutoCloseable {
     }
 
     private String changeEncoding(String str) throws UnsupportedEncodingException {
+        Pattern p = Pattern.compile("^[а-яА-ЯёЁ\\d\\s\\p{Punct}]*$");
+        Matcher m = p.matcher(str);
+        if (m.matches()) {
+            return str;
+        }
         return new String(str.getBytes("ISO-8859-1"), "Cp866");
     }
 
