@@ -1,32 +1,39 @@
 package ru.neoflex.vak.fiasParser.dbWrapper;
 
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
-import ru.neoflex.vak.fiasParser.fiasApi.DbfTable;
+import ru.neoflex.vak.fiasParser.dbfApi.DbfTable;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
 public class MssqlWrapper extends DbWrapper implements AutoCloseable {
 
-    public MssqlWrapper(MssqlProperties config) {
-        super(config);
+
+    public MssqlWrapper(MssqlProperties config, Callback onProgress) throws SQLException, ClassNotFoundException {
+        super(config, onProgress);
     }
 
     @Override
     void fillDbfTable(DbfTable table) throws Exception {
+        float currentTableStatus;
         Integer recordsCount = 0;
         Integer rowsInChunk = 0;
         String pattern = getInsertPattern(table);
         StringBuilder execSql = new StringBuilder("");
         ArrayList<DbfTable.Header> headers = table.getHeaders();
 
-        Statement st = createStatement();
+        Statement st = connection.createStatement();
 
-        System.out.print("Формируем chunk... ");
+        printStatus("Формируем chunk... ");
         ArrayList<String> rowObjects;
         try (DbfTable reader = table.startRead()) {
             while ((rowObjects = reader.nextRow()) != null) {
+                if (!run) {
+                    return;
+                }
+
                 rowsInChunk++;
                 recordsCount++;
 
@@ -42,25 +49,30 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                 st.addBatch(prepareQuery(execSql.toString()));
 
                 if (rowsInChunk == ROWS_IN_CHUNK) {
-                    System.out.println("Готово.");
-                    System.out.print("Вставляем chunk(" + ROWS_IN_CHUNK + ") в таблицу("
+                    insertedRecordCount += rowsInChunk;
+
+                    printDone("Готово.\n");
+                    printStatus("Вставляем chunk(" + ROWS_IN_CHUNK + ") в таблицу("
                             + (recordsCount - ROWS_IN_CHUNK) + ") '" + table.getTableName() + "'... ");
                     st.executeBatch();
                     rowsInChunk = 0;
-                    System.out.println("Готово.");
-                    System.out.print("Формируем chunk... ");
+                    currentTableStatus = (float) recordsCount / table.getRecordCount();
+                    printStatus("Готово.", currentTableStatus);
+                    printStatus("Формируем chunk... ");
                 }
             }
         }
 
         if (!execSql.toString().equals(pattern)) {
-            System.out.println("Готово.");
-            System.out.print("Вставляем chunk(" + rowsInChunk + ") в таблицу("
+            insertedRecordCount += rowsInChunk;
+            printDone("Готово.\n");
+            printStatus("Вставляем chunk(" + rowsInChunk + ") в таблицу("
                     + (recordsCount - rowsInChunk) + ") '" + table.getTableName() + "'... ");
             st.executeBatch();
-            System.out.println("Готово.");
+            currentTableStatus = (float) recordsCount / table.getRecordCount();
+            printStatus("Готово.", currentTableStatus);
         }
-        System.out.println("Всего записей в таблице: " + recordsCount);
+        printStatus("Всего записей в таблице: " + recordsCount + "\n");
     }
 
     private String getFieldData(DbfTable.Header header, String object) throws IOException {

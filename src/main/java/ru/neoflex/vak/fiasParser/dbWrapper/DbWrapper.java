@@ -2,70 +2,79 @@ package ru.neoflex.vak.fiasParser.dbWrapper;
 
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
 import ru.neoflex.vak.fiasParser.config.MysqlProperties;
-import ru.neoflex.vak.fiasParser.fiasApi.DbfTable;
-import ru.neoflex.vak.fiasParser.fiasApi.FiasDatabase;
+import ru.neoflex.vak.fiasParser.dbfApi.DbfDatabase;
+import ru.neoflex.vak.fiasParser.dbfApi.DbfTable;
 
+import java.math.RoundingMode;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public abstract class DbWrapper implements AutoCloseable {
 
+    private Callback callback;
+
+    private Integer totalRecordCount;
+
     static final int ROWS_IN_CHUNK = 1000;
 
-    private Connection connection;
+    Connection connection;
+
+    Integer insertedRecordCount = 0;
+
+    boolean run = true;
 
 
-    DbWrapper(MssqlProperties config) {
-        System.out.print("Соединение с БД... ");
+    DbWrapper(MssqlProperties config, Callback onProgress) throws ClassNotFoundException, SQLException {
+        this.callback = onProgress;
+        printStatus("Соединение с БД... ");
 
-        try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            String connectionString = "jdbc:sqlserver://" + config.hostName + ":" + config.port +
-                    ";databaseName=" + config.databaseName +
-                    ";integratedSecurity=" + config.integratedSecurity +
-                    ";user=" + config.user +
-                    ";password=" + config.password;
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        String connectionString = "jdbc:sqlserver://" + config.hostName + ":" + config.port +
+                ";databaseName=" + config.databaseName +
+                ";integratedSecurity=" + config.integratedSecurity +
+                ";user=" + config.user +
+                ";password=" + config.password;
 
-            connection = DriverManager.getConnection(connectionString);
+        connection = DriverManager.getConnection(connectionString);
 
-            System.out.println("Готово.\n");
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
+        printDone("Готово.\n\n");
     }
 
-    DbWrapper(MysqlProperties config) {
-        System.out.print("Соединение с БД... ");
+    DbWrapper(MysqlProperties config, Callback onProgress) throws ClassNotFoundException, SQLException {
+        this.callback = onProgress;
+        printStatus("Соединение с БД... ");
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String connectionString = "jdbc:mysql://" + config.hostName + ":" + config.port + "/" + config.databaseName +
-                    "?verifyServerCertificate=" + config.verifyServerCertificate +
-                    "&useSSL=" + config.useSSL +
-                    "&requireSSL=" + config.requireSSL +
-                    "&useLegacyDatetimeCode=" + config.useLegacyDatetimeCode +
-                    "&amp" +
-                    "&serverTimezone=" + config.serverTimezone;
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        String connectionString = "jdbc:mysql://" + config.hostName + ":" + config.port + "/" + config.databaseName +
+                "?verifyServerCertificate=" + config.verifyServerCertificate +
+                "&useSSL=" + config.useSSL +
+                "&requireSSL=" + config.requireSSL +
+                "&useLegacyDatetimeCode=" + config.useLegacyDatetimeCode +
+                "&amp" +
+                "&serverTimezone=" + config.serverTimezone;
 
-            connection = DriverManager.getConnection(connectionString, config.user, config.password);
+        connection = DriverManager.getConnection(connectionString, config.user, config.password);
 
-            System.out.println("Готово.\n");
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
+        printDone("Готово.\n\n");
     }
 
+    public interface Callback {
+        boolean onProgress(String message, float fullProgress, float currentProgress);
+    }
 
-    public void copyTables(FiasDatabase db) throws Exception {
+    public void copyTables(DbfDatabase db) throws Exception {
         ArrayList<DbfTable> tables = db.getTables();
+        totalRecordCount = db.getRecordCount();
 
         connection.setAutoCommit(false);
-        System.out.println("Перенос данных в БД...\n");
+        printStatus("Перенос данных в БД...\n\n");
         for (DbfTable table : tables) {
             createTableFromDbf(table);
         }
         connection.commit();
-        System.out.println("Все данные перенесены в БД.");
+        printStatus("Все данные перенесены в БД.\n");
+        insertedRecordCount = 0;
     }
 
 
@@ -73,15 +82,9 @@ public abstract class DbWrapper implements AutoCloseable {
         return text.substring(0, text.length() - 1) + ";";
     }
 
-    Statement createStatement() throws SQLException {
-        return connection.createStatement();
-    }
-
-    void executeUpdate(String SQL) {
+    void executeUpdate(String SQL) throws SQLException {
         try (PreparedStatement prepareStatement = connection.prepareStatement(SQL)) {
             prepareStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -96,16 +99,16 @@ public abstract class DbWrapper implements AutoCloseable {
             dropTable(tableName);
         }
 
-        System.out.print("Создание таблицы '" + tableName + "'... ");
+        printStatus("Создание таблицы '" + tableName + "'... ");
         executeUpdate(getCreateTableSql(table));
-        System.out.println("Готово.\n");
+        printDone("Готово.\n");
 
-        System.out.println("Заполняем таблицу '" + tableName + "'... ");
+        printStatus("Заполняем таблицу '" + tableName + "'... \n");
         fillDbfTable(table);
-        System.out.println("Таблица '" + tableName + "' заполнена.\n");
+        printStatus("Таблица '" + tableName + "' заполнена.\n\n");
     }
 
-    private void dropTable(String tableName) {
+    private void dropTable(String tableName) throws SQLException {
         executeUpdate("DROP TABLE " + tableName);
     }
 
@@ -143,13 +146,44 @@ public abstract class DbWrapper implements AutoCloseable {
         return resultSet.next();
     }
 
+    private String prepareStatus(float progress) {
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(progress);
+    }
 
-    public void close() {
-        try {
-            connection.close();
-            connection = null;
-        } catch (Exception e) {
-            e.printStackTrace();
+    void printStatus(String text, float currentTableProgress) {
+///        try {
+//            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+//        } catch (InterruptedException | IOException e) {
+//            e.printStackTrace();
+//        }
+        float fullProgress = (float) insertedRecordCount / totalRecordCount;
+
+        if (callback != null) {
+            run = callback.onProgress(text, fullProgress, currentTableProgress);
+        } else {
+            System.out.print(text + "[all:" + prepareStatus(100 * fullProgress) +
+                    "%, cur:" + prepareStatus(100 * currentTableProgress) + "%]\n");
         }
+    }
+
+    void printStatus(String text) {
+        if (callback != null) {
+            run = callback.onProgress(text, -1, -1);
+        } else {
+            System.out.print(text);
+        }
+    }
+
+    void printDone(String done) {
+        if (callback == null) {
+            System.out.print(done);
+        }
+    }
+
+    public void close() throws SQLException {
+        connection.close();
+        connection = null;
     }
 }

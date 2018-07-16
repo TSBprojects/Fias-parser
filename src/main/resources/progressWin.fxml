@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="230.0"
+            prefWidth="420.0" style="-fx-background-color: #2e3348;" xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.neoflex.vak.fiasParser.ProgressController">
+    <children>
+        <Label layoutX="14.0" layoutY="11.0" text="Fias parser" textFill="WHITE">
+            <font>
+                <Font name="Kristen ITC" size="30.0"/>
+            </font>
+        </Label>
+        <AnchorPane layoutY="72.0" prefHeight="328.0" prefWidth="421.0" style="-fx-background-color: DDDDDD;"
+                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="72.0">
+            <children>
+                <Label fx:id="infoLabel" layoutX="14.0" layoutY="14.0" prefHeight="20.0" prefWidth="356.0" text="info"
+                       AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <ProgressBar fx:id="allPb" layoutX="14.0" layoutY="41.0" prefHeight="27.0" prefWidth="391.0"
+                             progress="0.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="16.0"/>
+                <ProgressBar fx:id="currPb" layoutX="14.0" layoutY="103.0" prefHeight="27.0" prefWidth="391.0"
+                             progress="0.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="16.0"/>
+                <Label layoutX="16.0" layoutY="80.0" prefHeight="20.0" prefWidth="356.0" text="Filling current table">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <Label layoutX="269.0" layoutY="143.0" text="Varygin. A.K. +79030230023 (C) 2018">
+                    <font>
+                        <Font size="9.0"/>
+                    </font>
+                </Label>
+            </children>
+        </AnchorPane>
+    </children>
+</AnchorPane>

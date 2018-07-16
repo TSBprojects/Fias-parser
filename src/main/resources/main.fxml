@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="394.0"
+            prefWidth="363.0" style="-fx-background-color: #2e3348;" xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.neoflex.vak.fiasParser.MainController">
+    <children>
+        <Label layoutX="14.0" layoutY="11.0" text="Fias parser" textFill="WHITE">
+            <font>
+                <Font name="Kristen ITC" size="30.0"/>
+            </font>
+        </Label>
+        <AnchorPane layoutY="72.0" prefHeight="328.0" prefWidth="442.0" style="-fx-background-color: DDDDDD;"
+                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="72.0">
+            <children>
+                <TabPane prefHeight="271.0" prefWidth="297.0" tabClosingPolicy="UNAVAILABLE"
+                         AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                         AnchorPane.topAnchor="0.0">
+                    <tabs>
+                        <Tab text="General">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="271.0" prefWidth="289.0"
+                                            style="-fx-background-color: DDDDDD;">
+                                    <children>
+                                        <Label layoutX="17.0" layoutY="105.0" text="Host:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label layoutX="17.0" layoutY="139.0" text="Port:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <TextField fx:id="hostField" layoutX="116.0" layoutY="101.0" prefWidth="220.0"
+                                                   promptText="localhost" AnchorPane.rightAnchor="27.0"/>
+                                        <TextField fx:id="portField" layoutX="116.0" layoutY="137.0" prefHeight="25.0"
+                                                   prefWidth="70.0" AnchorPane.rightAnchor="177.0"/>
+                                        <Label layoutX="16.0" layoutY="174.0" text="Database:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <TextField fx:id="dbNameField" layoutX="116.0" layoutY="170.0" prefWidth="220.0"
+                                                   AnchorPane.rightAnchor="27.0"/>
+                                        <Label layoutX="17.0" layoutY="209.0" text="User:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <TextField fx:id="userField" layoutX="116.0" layoutY="205.0" prefWidth="220.0"
+                                                   promptText="root" AnchorPane.rightAnchor="27.0"/>
+                                        <Label layoutX="16.0" layoutY="243.0" text="Password:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <ChoiceBox fx:id="dbTypeChb" layoutX="117.0" layoutY="61.0" prefHeight="25.0"
+                                                   prefWidth="220.0" AnchorPane.rightAnchor="27.0"/>
+                                        <Label layoutX="18.0" layoutY="63.0" text="Database type:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <PasswordField fx:id="passwordField" layoutX="116.0" layoutY="241.0"
+                                                       prefHeight="25.0" prefWidth="220.0" promptText="root"
+                                                       AnchorPane.rightAnchor="27.0"/>
+                                        <Label layoutX="19.0" layoutY="25.0" text="Fias files path:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <TextField fx:id="fiasFilesPathField" disable="true" layoutX="116.0"
+                                                   layoutY="23.0" prefHeight="25.0" prefWidth="164.0"
+                                                   AnchorPane.rightAnchor="83.0"/>
+                                        <Button fx:id="fiasFilesPathButton" layoutX="288.0" layoutY="22.0"
+                                                minHeight="25.0" mnemonicParsing="false" prefHeight="26.0" text="Обзор"
+                                                AnchorPane.rightAnchor="27.0">
+                                            <font>
+                                                <Font size="11.0"/>
+                                            </font>
+                                        </Button>
+                                        <Label layoutX="213.0" layoutY="278.0"
+                                               text="Varygin. A.K. +79030230023 (C) 2018">
+                                            <font>
+                                                <Font size="9.0"/>
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Mysql">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <children>
+                                        <Label layoutX="19.0" layoutY="21.0" prefHeight="17.0" prefWidth="130.0"
+                                               text="Verify server certificate:"/>
+                                        <Label layoutX="19.0" layoutY="55.0" prefHeight="17.0" prefWidth="131.0"
+                                               text="SSL:"/>
+                                        <Label layoutX="18.0" layoutY="90.0" prefHeight="17.0" prefWidth="68.0"
+                                               text="Require SSL:"/>
+                                        <Label layoutX="19.0" layoutY="124.0" prefHeight="17.0" prefWidth="173.0"
+                                               text="Legacy datetime code:"/>
+                                        <Label layoutX="18.0" layoutY="159.0" text="Server timezone:"/>
+                                        <TextField fx:id="stField" layoutX="150.0" layoutY="155.0" prefHeight="25.0"
+                                                   prefWidth="90.0" promptText="UTC"/>
+                                        <CheckBox fx:id="ldcChb" layoutX="151.0" layoutY="124.0"
+                                                  mnemonicParsing="false"/>
+                                        <CheckBox fx:id="reqSslChb" layoutX="151.0" layoutY="90.0"
+                                                  mnemonicParsing="false"/>
+                                        <CheckBox fx:id="sslChb" layoutX="151.0" layoutY="55.0"
+                                                  mnemonicParsing="false"/>
+                                        <CheckBox fx:id="vscChb" layoutX="151.0" layoutY="21.0"
+                                                  mnemonicParsing="false"/>
+                                        <Label layoutX="18.0" layoutY="192.0" text="Port:"/>
+                                        <TextField fx:id="portField1" disable="true" layoutX="150.0" layoutY="190.0"
+                                                   prefHeight="25.0" prefWidth="90.0" text="3306"/>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Mssql">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <children>
+                                        <Label layoutX="21.0" layoutY="21.0" text="Integrated security:"/>
+                                        <CheckBox fx:id="integSecChb" layoutX="133.0" layoutY="21.0"
+                                                  mnemonicParsing="false" selected="true"/>
+                                        <Label layoutX="21.0" layoutY="52.0" text="Port:"/>
+                                        <TextField fx:id="portField11" disable="true" layoutX="133.0" layoutY="50.0"
+                                                   prefHeight="25.0" prefWidth="90.0" text="1433"/>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+            </children>
+        </AnchorPane>
+        <Button fx:id="startButton" layoutX="225.0" layoutY="23.0" mnemonicParsing="false" prefHeight="25.0"
+                prefWidth="102.0" style="-fx-background-color: F39C63;" text="Start" textFill="WHITE"
+                AnchorPane.rightAnchor="43.0">
+            <font>
+                <Font name="Kristen ITC" size="12.0"/>
+            </font>
+        </Button>
+    </children>
+</AnchorPane>

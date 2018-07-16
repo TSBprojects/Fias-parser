@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,6 +33,16 @@ public class ParsConfig {
         return fiasDirPath;
     }
 
+    public ParsConfig(String dbType, MysqlProperties mysqlProp, MssqlProperties mssqlProp, String fiasDirPath) {
+        if (dbType.equals("mssql")) {
+            this.dbType = DbType.mssql;
+        } else {
+            this.dbType = DbType.mysql;
+        }
+        this.mysqlProp = mysqlProp;
+        this.mssqlProp = mssqlProp;
+        this.fiasDirPath = fiasDirPath;
+    }
 
     public ParsConfig(String configPath) throws IOException {
         mysqlProp = new MysqlProperties();
