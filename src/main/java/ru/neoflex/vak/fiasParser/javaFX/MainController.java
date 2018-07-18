@@ -1,4 +1,4 @@
-package ru.neoflex.vak.fiasParser;
+package ru.neoflex.vak.fiasParser.javaFX;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

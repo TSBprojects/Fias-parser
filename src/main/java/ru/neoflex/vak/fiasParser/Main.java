@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import ru.neoflex.vak.fiasParser.config.ParsConfig;
+import ru.neoflex.vak.fiasParser.javaFX.MainController;
 
 import java.io.IOException;
 

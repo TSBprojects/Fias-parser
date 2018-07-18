@@ -1,4 +1,4 @@
-package ru.neoflex.vak.fiasParser;
+package ru.neoflex.vak.fiasParser.javaFX;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import ru.neoflex.vak.fiasParser.DbfParser;
 import ru.neoflex.vak.fiasParser.config.ParsConfig;
 
 import java.io.IOException;
