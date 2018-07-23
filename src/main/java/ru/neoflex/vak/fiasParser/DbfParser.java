@@ -15,13 +15,13 @@ public class DbfParser {
     public static void start(ParsConfig config, DbWrapper.Callback onProgress) throws Exception {
         switch (config.getDbType()) {
             case mssql: {
-                try (DbWrapper db = new MssqlWrapper(config.getMssqlProp(),onProgress)) {
+                try (DbWrapper db = new MssqlWrapper(config.getMssqlProp(), onProgress)) {
                     db.copyTables(new DbfDatabase(Paths.get(config.getFiasDirPath())));
                 }
                 break;
             }
             case mysql: {
-                try (DbWrapper db = new MysqlWrapper(config.getMysqlProp(),onProgress)) {
+                try (DbWrapper db = new MysqlWrapper(config.getMysqlProp(), onProgress)) {
                     db.copyTables(new DbfDatabase(Paths.get(config.getFiasDirPath())));
                 }
                 break;

@@ -1,5 +1,7 @@
 package ru.neoflex.vak.fiasParser.dbWrapper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
 import ru.neoflex.vak.fiasParser.dbfApi.DbfTable;
 
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 
 public class MssqlWrapper extends DbWrapper implements AutoCloseable {
 
+    private final Logger log = LogManager.getLogger(MssqlWrapper.class.getName());
 
     public MssqlWrapper(MssqlProperties config, Callback onProgress) throws SQLException, ClassNotFoundException {
         super(config, onProgress);
@@ -21,6 +24,7 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
         Integer recordsCount = 0;
         Integer rowsInChunk = 0;
         String pattern = getInsertPattern(table);
+        StringBuilder chunk = new StringBuilder("");
         StringBuilder execSql = new StringBuilder("");
         ArrayList<DbfTable.Header> headers = table.getHeaders();
 
@@ -45,8 +49,13 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                         execSql.append(",");
                     }
                 }
-                execSql.append("),");
-                st.addBatch(prepareQuery(execSql.toString()));
+                execSql.append(");");
+                chunk.append(execSql.toString());
+
+                if (log.isDebugEnabled()) {
+                    log.debug("(mssql) Adding a command to the SQL batch: " + execSql.toString());
+                }
+                st.addBatch(execSql.toString());
 
                 if (rowsInChunk == ROWS_IN_CHUNK) {
                     insertedRecordCount += rowsInChunk;
@@ -54,8 +63,10 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
                     printDone("Готово.\n");
                     printStatus("Вставляем chunk(" + ROWS_IN_CHUNK + ") в таблицу("
                             + (recordsCount - ROWS_IN_CHUNK) + ") '" + table.getTableName() + "'... ");
-                    st.executeBatch();
+                    log.info("(mssql) Executing batch.");
+                    executeBatch(st, chunk.toString());
                     rowsInChunk = 0;
+                    chunk = new StringBuilder("");
                     currentTableStatus = (float) recordsCount / table.getRecordCount();
                     printStatus("Готово.", currentTableStatus);
                     printStatus("Формируем chunk... ");
@@ -68,11 +79,21 @@ public class MssqlWrapper extends DbWrapper implements AutoCloseable {
             printDone("Готово.\n");
             printStatus("Вставляем chunk(" + rowsInChunk + ") в таблицу("
                     + (recordsCount - rowsInChunk) + ") '" + table.getTableName() + "'... ");
-            st.executeBatch();
+            log.info("(mssql) Executing batch.");
+            executeBatch(st, chunk.toString());
             currentTableStatus = (float) recordsCount / table.getRecordCount();
             printStatus("Готово.", currentTableStatus);
         }
         printStatus("Всего записей в таблице: " + recordsCount + "\n");
+    }
+
+    private void executeBatch(Statement st, String lastChunk) throws Exception {
+        try {
+            st.executeBatch();
+        } catch (Exception e) {
+            log.warn("(mssql) Last chunk: " + lastChunk);
+            throw new Exception(e);
+        }
     }
 
     private String getFieldData(DbfTable.Header header, String object) throws IOException {

@@ -10,6 +10,9 @@ import javafx.scene.image.Image;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import ru.neoflex.vak.fiasParser.Main;
 import ru.neoflex.vak.fiasParser.config.DbType;
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
 import ru.neoflex.vak.fiasParser.config.MysqlProperties;
@@ -22,6 +25,8 @@ import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class MainController {
+
+    private static final Logger log = LogManager.getLogger(Main.class.getName());
 
     @FXML
     private ResourceBundle resources;

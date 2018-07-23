@@ -1,5 +1,8 @@
 package ru.neoflex.vak.fiasParser.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -11,6 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParsConfig {
+
+    private final Logger log = LogManager.getLogger(ParsConfig.class.getName());
 
     private DbType dbType;
     private MysqlProperties mysqlProp;
@@ -52,6 +57,7 @@ public class ParsConfig {
 
     private void readConfig(Path configPath) throws IOException {
         if (Files.exists(configPath)) {
+            log.info("Read the configuration file.");
             List<String> props = Files.readAllLines(configPath);
             for (String propLine : props) {
                 if (!propLine.isEmpty() && propLine.charAt(0) != '[' && propLine.charAt(0) != '#') {
@@ -59,6 +65,8 @@ public class ParsConfig {
                 }
             }
         } else {
+            log.fatal("Configuration file not found.");
+            log.info("Creating a configuration file.");
             Files.createFile(Paths.get("config.ini"));
             Files.write(
                     Paths.get("config.ini"),

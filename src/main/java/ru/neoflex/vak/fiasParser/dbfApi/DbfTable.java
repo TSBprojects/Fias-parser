@@ -2,6 +2,8 @@ package ru.neoflex.vak.fiasParser.dbfApi;
 
 import com.linuxense.javadbf.DBFField;
 import com.linuxense.javadbf.DBFReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,9 +14,12 @@ import java.util.ArrayList;
 
 public class DbfTable implements AutoCloseable {
 
+    private final Logger log = LogManager.getLogger(DbfTable.class.getName());
+
     private Integer currentPart = 0;
     private DbfTablePart reader;
 
+    private String tableName;
     private String dbtFilePath;
     private String firstPartName;
     private ArrayList<Header> headers;
@@ -31,7 +36,7 @@ public class DbfTable implements AutoCloseable {
     }
 
     public String getTableName() {
-        return Utils.getTableName(firstPartName);
+        return tableName;
     }
 
     public ArrayList<Header> getHeaders() {
@@ -45,6 +50,7 @@ public class DbfTable implements AutoCloseable {
 
     DbfTable(Path dbfPath) {
         firstPartName = dbfPath.getFileName().toString();
+        tableName = Utils.getTableName(firstPartName);
     }
 
     void initializeTable(Path rootPath) throws IOException {
@@ -90,6 +96,7 @@ public class DbfTable implements AutoCloseable {
 //                                     isTablePart(this.getTableName(), path.getFileName().toString()))) {
 //            paths.forEach(part -> parts.add(new DbfTablePart(part)));
 //        }
+        log.info("Search all parts of the table '" + tableName + "'");
         final File folder = new File(rootPath.toString());
         for (final File file : folder.listFiles()) {
             if (isTablePart(this.getTableName(), file.getName())) {
@@ -123,14 +130,17 @@ public class DbfTable implements AutoCloseable {
 
     public DbfTable startRead() throws Exception {
         if (reader != null && currentPart == 0) {
+            log.error("tableReader is already open!");
             throw new Exception("tableReader уже открыт!");
         }
+        log.info("Start to read records! (table part num" + currentPart + ")");
         reader = parts.get(currentPart).startRead();
         return this;
     }
 
     public ArrayList<String> nextRow() throws Exception {
         if (reader == null) {
+            log.error("This tableReader is closed!");
             throw new Exception("Этот tableReader закрыт!");
         }
 

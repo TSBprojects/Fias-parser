@@ -6,6 +6,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.neoflex.vak.fiasParser.DbfParser;
 import ru.neoflex.vak.fiasParser.config.ParsConfig;
 
@@ -14,6 +16,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class ProgressController {
+
+    private final Logger log = LogManager.getLogger(ProgressController.class.getName());
 
     public void setConfig(ParsConfig config) {
         this.config = config;
@@ -60,8 +64,9 @@ public class ProgressController {
                         return run;
                     });
                 } catch (Exception e) {
-                    MainController.showError(e.getMessage());
                     Platform.runLater(() -> {
+                        log.error(e.getMessage(), e);
+                        MainController.showError(e.getMessage() + " \nSee logs: 'logs.log'");
                         currentWindow.close();
                     });
                 }

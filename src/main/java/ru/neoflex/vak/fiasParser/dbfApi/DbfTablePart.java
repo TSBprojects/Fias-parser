@@ -2,6 +2,8 @@ package ru.neoflex.vak.fiasParser.dbfApi;
 
 import com.linuxense.javadbf.DBFReader;
 import com.linuxense.javadbf.DBFUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DbfTablePart implements AutoCloseable {
+
+    private final Logger log = LogManager.getLogger(DbfTablePart.class.getName());
 
     private DBFReader reader;
 
@@ -33,6 +37,7 @@ public class DbfTablePart implements AutoCloseable {
 
     DbfTablePart startRead() throws Exception {
         if (reader != null) {
+            log.error("tablePartReader is already open!");
             throw new Exception("tablePartReader уже открыт!");
         }
 
@@ -48,9 +53,9 @@ public class DbfTablePart implements AutoCloseable {
 
     ArrayList<String> nextRow() throws Exception {
         if (reader == null) {
+            log.error("This tablePartReader is closed!");
             throw new Exception("Этот tablePartReader закрыт!");
         }
-
         Object[] rowObjects;
         ArrayList<String> rObjects = new ArrayList<>();
 
@@ -75,12 +80,15 @@ public class DbfTablePart implements AutoCloseable {
     }
 
     private String changeEncoding(String str) throws UnsupportedEncodingException {
+        String res;
         Pattern p = Pattern.compile("^[а-яА-ЯёЁ\\d\\s\\p{Punct}]*$");
         Matcher m = p.matcher(str);
         if (m.matches()) {
-            return str;
+            res = str;
+        } else {
+            res = new String(str.getBytes("ISO-8859-1"), "Cp866");
         }
-        return new String(str.getBytes("ISO-8859-1"), "Cp866");
+        return res.replace("'", "\"");
     }
 
     @Override

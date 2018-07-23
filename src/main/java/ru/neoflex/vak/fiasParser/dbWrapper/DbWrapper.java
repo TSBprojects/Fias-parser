@@ -1,5 +1,7 @@
 package ru.neoflex.vak.fiasParser.dbWrapper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.neoflex.vak.fiasParser.config.MssqlProperties;
 import ru.neoflex.vak.fiasParser.config.MysqlProperties;
 import ru.neoflex.vak.fiasParser.dbfApi.DbfDatabase;
@@ -11,6 +13,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public abstract class DbWrapper implements AutoCloseable {
+
+    private final Logger log = LogManager.getLogger(DbWrapper.class.getName());
 
     private Callback callback;
 
@@ -27,6 +31,7 @@ public abstract class DbWrapper implements AutoCloseable {
 
     DbWrapper(MssqlProperties config, Callback onProgress) throws ClassNotFoundException, SQLException {
         this.callback = onProgress;
+        log.info("Connecting to the database.");
         printStatus("Соединение с БД... ");
 
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -43,6 +48,7 @@ public abstract class DbWrapper implements AutoCloseable {
 
     DbWrapper(MysqlProperties config, Callback onProgress) throws ClassNotFoundException, SQLException {
         this.callback = onProgress;
+        log.info("Connecting to the database.");
         printStatus("Соединение с БД... ");
 
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -68,11 +74,13 @@ public abstract class DbWrapper implements AutoCloseable {
         totalRecordCount = db.getRecordCount();
 
         connection.setAutoCommit(false);
+        log.info("Start transferring data to a database...");
         printStatus("Перенос данных в БД...\n\n");
         for (DbfTable table : tables) {
             createTableFromDbf(table);
         }
         connection.commit();
+        log.info("Commit changes.");
         printStatus("Все данные перенесены в БД.\n");
         insertedRecordCount = 0;
     }
@@ -94,21 +102,26 @@ public abstract class DbWrapper implements AutoCloseable {
 
 
     private void createTableFromDbf(DbfTable table) throws Exception {
+        String query;
         String tableName = table.getTableName();
         if (isTableExist(tableName)) {
             dropTable(tableName);
         }
 
+        query = getCreateTableSql(table);
+        log.info("Creating a table '" + tableName + "'(SQL: " + query + ").");
         printStatus("Создание таблицы '" + tableName + "'... ");
-        executeUpdate(getCreateTableSql(table));
+        executeUpdate(query);
         printDone("Готово.\n");
 
+        log.info("Filling the table '" + tableName + "'.");
         printStatus("Заполняем таблицу '" + tableName + "'... \n");
         fillDbfTable(table);
         printStatus("Таблица '" + tableName + "' заполнена.\n\n");
     }
 
     private void dropTable(String tableName) throws SQLException {
+        log.info("Delete table '" + tableName + "'.");
         executeUpdate("DROP TABLE " + tableName);
     }
 
