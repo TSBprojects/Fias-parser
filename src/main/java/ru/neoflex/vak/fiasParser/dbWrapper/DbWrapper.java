@@ -74,7 +74,7 @@ public abstract class DbWrapper implements AutoCloseable {
         totalRecordCount = db.getRecordCount();
 
         connection.setAutoCommit(false);
-        log.info("Start transferring data to a database...");
+        log.info("Start transferring data to database...");
         printStatus("Перенос данных в БД...\n\n");
         for (DbfTable table : tables) {
             createTableFromDbf(table);
